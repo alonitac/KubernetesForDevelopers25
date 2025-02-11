@@ -31,9 +31,18 @@ Please complete the [onboarding tutorial](tutorials/onboarding.md) **before the 
 
 
 <tr>
- <td>1</td>
+ <td>2</td>
  <td>Orchestration</td>
- <td><a href="tutorials/k8s_setup_and_intro">Creating and accessing a GKE cluster</a></td>
+ <td><a href="tutorials/k8s_setup_and_intro.md">Creating and accessing a GKE cluster</a></td>
+ <td></td>
+ <td></td>
+ <td></td>
+</tr>
+
+<tr>
+ <td>3</td>
+ <td>Orchestration</td>
+ <td><a href="tutorials/k8s_core_objects.md">Core objects</a></td>
  <td></td>
  <td></td>
  <td></td>

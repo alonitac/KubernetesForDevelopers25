@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🧑🏻‍💻 Kubernetes for Developers - Qodo.io
+# ☸️ Kubernetes for Developers - Qodo.io
 
 
 </div>
@@ -8,7 +8,7 @@
 Welcome to the main repository for the "Kubernetes for Developers" course!
 This is your place for all course content, exercises, and tutorials.
 
-Work hard, and have fun 😊
+Work hard, and have fun 🐳
 
 ## Onboard the course 
 

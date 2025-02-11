@@ -19,9 +19,6 @@ Please complete the [onboarding tutorial](tutorials/onboarding.md) **before the 
 <table width="100%">
 <tr><th>#</th><th>Topic</th><th>Tutorial</th><th colspan="3">&nbsp;&nbsp;&nbsp;Resources&nbsp;&nbsp;&nbsp;</th></tr>
 
-<tr>
- <td align="center" colspan="8"><br><b>Intro to Software Development and QA Automation in Java</b><br><br></td>
-</tr>
 
 <tr>
  <td>1</td>

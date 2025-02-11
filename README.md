@@ -1,6 +1,6 @@
 <div align="center">
 
-# ☸️ Kubernetes for Developers - Qodo.io
+# ☸️ Kubernetes for Developers - Qodo.ai
 
 
 </div>

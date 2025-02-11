@@ -12,7 +12,7 @@ Work hard, and have fun 🐳
 
 ## Onboard the course 
 
-Please complete the [onboarding tutorial](tutorials/onboarding.md) **before the course begins (04/12/24)**. 
+Please complete the [onboarding tutorial](tutorials/onboarding.md) **before the course begins**. 
 
 ## Studying Guide
 

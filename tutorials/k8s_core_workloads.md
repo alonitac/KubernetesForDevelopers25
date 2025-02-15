@@ -528,7 +528,7 @@ spec:
         spec:
           containers:
           - name: latency-test
-            image: busybox:1.28
+            image: alpine
             imagePullPolicy: IfNotPresent
             env:
             - name: INFLUXDB_URL
@@ -540,16 +540,23 @@ spec:
             - -c
             - |
               TEST_TIMESTAMP=$(date +%s%N)  # Nanosecond precision timestamp
-              RESULT=$(wget -O /dev/null -T 5 --server-response --no-check-certificate --quiet "http://$FRONTEND_SERVICE" 2>&1 | awk '/^  .*time=/{print $2}' | cut -d'=' -f2)
+              if curl -s --head --fail "$FRONTEND_SERVICE" > /dev/null; then
+                echo "Service is available"
 
-              if [ -z "$RESULT" ]; then
-                RESULT=0
+                # Measure response time
+                LATENCY=$(curl -o /dev/null -s -w "%{time_total}" "$FRONTEND_SERVICE")
+                echo "Latency: $LATENCY seconds"
+
+                # Send latency to InfluxDB
+                curl -X POST "$INFLUXDB_URL" --data-binary "latency_test,host=$FRONTEND_SERVICE value=$LATENCY $TEST_TIMESTAMP"
+                exit 0
+              else
+                echo "Service unavailable, reporting failure"
+                
+                # Log unavailability as zero latency
+                curl -X POST "$INFLUXDB_URL" --data-binary "latency_test,host=$FRONTEND_SERVICE value=0 $TEST_TIMESTAMP"
+                exit 1
               fi
-
-              echo "Latency for $FRONTEND_SERVICE is $RESULT ms at $TEST_TIMESTAMP"
-
-              # Write latency result to InfluxDB
-              wget --method=POST --body-data="latency_test,host=$FRONTEND_SERVICE value=$RESULT $TEST_TIMESTAMP" "$INFLUXDB_URL"
           restartPolicy: OnFailure
 ```
 

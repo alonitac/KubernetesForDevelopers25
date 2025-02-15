@@ -24,7 +24,7 @@ Please complete the [onboarding tutorial](tutorials/onboarding.md) **before the 
  <td>1</td>
  <td>Intro</td>
  <td>Intro to Kubernetes and Cloud Computing in GCP</td>
- <td></td>
+ <td align="center"><a target="_blank" href="https://exit-zero-academy.github.io/DevOpsTheHardWayAssets/slides/gke_k8s_intro.html"><img src="https://exit-zero-academy.github.io/DevOpsTheHardWayAssets/img/slides.png" /></a></td>
  <td></td>
  <td></td>
 </tr>

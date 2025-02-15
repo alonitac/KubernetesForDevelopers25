@@ -158,7 +158,8 @@ Use `kubectl` to answer the following questions:
 4. For the single **frontend** running pod, how many environment variables does a container named `server` have? 
 5. For the single **frontend** running pod, what is the Docker image the container named `server` based on? 
 6. What is the node name that the **emailservice** pod was scheduled on (by the k8s scheduler)?
-8. What is the port do the **checkoutservice** pods listend on? 
+7. What is the port do the **checkoutservice** pods listend on? 
+8. How many containers does the pod starting with `fluentbit` in the `kube-system` namespace have? 
 
 ### :pencil2: Pod troubleshoot I
 
@@ -171,7 +172,7 @@ Apply the `k8s/customers-db.yaml` to deploy a MySQL pod in the cluster.
 4. Inspired by the `k8s/release-0.8.0.yaml` YAML manifest, try to add the required env var to the `k8s/customers-db.yaml` manifest to make the MySQL pod running. 
 
 
-Use the `kubectl delete` command to cleanup your cluster. 
+Use the `kubectl delete` command to cleanup your cluster from the resources of the `k8s/customers-db.yaml` and `k8s/release-0.8.0.yaml` manifests.
 
 
 [k8s_components]: https://exit-zero-academy.github.io/DevOpsTheHardWayAssets/img/k8s_components.png

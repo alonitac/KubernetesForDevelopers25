@@ -1,4 +1,4 @@
-# Kubernetes core objects
+# Kubernetes core workloads
 
 ## Workloads
 
@@ -48,7 +48,7 @@ The Pod remains on that node until somthing happens - the Pod finishes execution
 
 The `labels` attached to the pod can be used to list or describe it.
 
-Labels are key/value pairs that are attached to objects such as Pods.
+**Labels** are key/value pairs that are attached to objects such as Pods.
 Labels are intended to be used to specify identifying attributes of objects that are meaningful and relevant to users, as well as organizing a subsets of objects.
 [Read here](https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/) about labeling best practice.
 
@@ -57,7 +57,7 @@ $ kubectl get pods -l env=prod
 NAME                    READY   STATUS    RESTARTS   AGE
 nginx                   1/1     Running   0          14s
 
-$ kubectl describe pods nginx
+$ kubectl describe pod nginx
 Name:             nginx
 Namespace:        default
 Priority:         0
@@ -114,7 +114,7 @@ Events:
 In the above output we can see a detailed description of the pod.
 Reviewing all the presented information can be overwhelmed, but here are a few important notes:
 
-- In you don't specify in which **namespace** to create the Pod object, the `default` namespace is used.
+- If you don't specify in which **namespace** to create the Pod object, the `default` namespace is used.
 - Each Pod is assigned a unique IP address.
 - Pod **events** can help you debug your pod state. 
 
@@ -409,8 +409,11 @@ The above created service can be used only for consumption inside your cluster.
 The `kube-proxy` (running in every node) ensures that connections to the service's IP are properly routed (or **load balanced**) to the correct pods that belong to the service.
 
 
-TODO create a pod busybox and talk with nginx wget command 
+Let's use the `kubectl run` command to create a **temporary** pod name `busybox-client` (based on the useful [`busybox` docker image](https://hub.docker.com/_/busybox)) that will communicate with our Nginx service: 
 
+```bash
+kubectl run busybox-client --rm --image=busybox --restart=Never -- sh -c 'while true; do wget -qO- http://nginx-service:8080; sleep 5; done'
+```
 
 ### Service DNS 
 
@@ -423,217 +426,6 @@ Instead of accessing your service by its IP address, you can simply use the Serv
 ```bash 
 curl nginx-service:8080
 ```
-
-### Service type 
-
-[Kubernetes Service types](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types) allow you to specify what kind of Service you want. Here is some of the main types:
-
-- `ClusterIP` (the default type) - Exposes the Service on a cluster-internal IP, allow usage only from within the cluster. 
-- `NodePort` - Exposes the Service on each Node's IP at a static port. 
-- `LoadBalancer` - Exposes the Service externally using an external load balancer (e.g. AWS Application Load Balancer). This type requires integration between your Kubernetes cluster to a cloud provider.
-
-## Secrets 
-
-Kubernetes **Secrets** are a way to securely store and manage sensitive information such as passwords, API keys, or certificates in the cluster.
-Secrets can be created independently of the Pods that use them, so there is less risk of the Secret (and its data) being exposed during the workflow of creating, viewing, and editing Pods.
-
-Secrets can be **mounted as files** or exposed **as environment variables** within Pods.
-
-### Provide secrets an environment variables
-
-Suppose you have to provide some basic authentication information to your `nginx` service:
-
-- Username `nginx-username`
-- Password `39528$vdg7Jb`.
-
-Create the Secret object using the `kubectl create secret` command:
-
-```bash
-kubectl create secret generic nginx-creds --from-literal='username=admin' --from-literal='password=39528$vdg7Jb'
-```
-
-The created Secret is an `Opaque` type secret.
-It is used to store an arbitrary user-defined data.
-Kubernetes support [other types](https://kubernetes.io/docs/concepts/configuration/secret/#secret-types) of secrets for different usages.
-
-```console 
-$ kubectl get secret nginx-creds
-NAME                     TYPE     DATA   AGE
-nginx-creds              Opaque   2      2m6s
-```
-
-The below example provides the secret data as environment variables to the running container:
-
-```yaml
-# k8s/deployment-demo-secret-env-var.yaml
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx
-  labels:
-    app: nginx
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: nginx
-  template:
-    metadata:
-        labels:
-          app: nginx
-    spec:
-      containers:
-      - name: server
-        image: nginx:1.26.0
-        env:
-          - name: NGINX_WORKER_PROCESSES
-            value: "2"
-            
-          - name: NG_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: nginx-creds
-                key: username
-          - name: NG_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: nginx-creds
-                key: password
-```
-
-In your shell, display the content of `NG_USERNAME` and `NG_PASSWORD` container environment variable:
-
-```console
-$ kubectl get pods -l app=nginx
-NAME                            READY   STATUS    RESTARTS      AGE
-nginx-55df5dcf48-6xbgx          1/1     Running   1 (91m ago)   19h
-
-$ kubectl exec -it nginx-55df5dcf48-6xbgx -- /bin/sh 
-root@nginx-55df5dcf48-6xbgx:/# echo $NG_USERNAME
-admin
-
-root@nginx-55df5dcf48-6xbgx:/# echo $NG_PASSWORD
-39528$vdg7Jb
-```
-
-
-> [!NOTE]
-> 
-> You can also create secret from YAML manifests similarly to other k8s objects. 
-> 
-> To do so, **the data has to be encoded in Base64**:
-> 
-> ```console
-> $ echo -n 'admin' | base64
-> YWRtaW4=
-> 
-> $ echo -n '39528$vdg7Jb' | base64
-> Mzk1MjgkdmRnN0pi
-> ```
-> 
-> Apply the below manifest by: `kubectl apply -f k8s/secret-demo.yaml`:
-> 
-> ```yaml
-> # k8s/secret-demo.yaml
-> 
-> apiVersion: v1
-> kind: Secret
-> metadata:
->   name: nginx-creds
-> type: Opaque
-> data:
->   username: YWRtaW4=
->   password: Mzk1MjgkdmRnN0pi
-> ```
-> 
-
-[Read here](https://kubernetes.io/docs/concepts/configuration/secret/) for more information on how to provide secrets to containers. 
-
-## ConfigMap
-
-ConfigMap is a mechanism for storing non-sensitive configuration data in key-value pairs. 
-ConfigMaps provide a convenient way to manage and **inject configuration settings into applications**, allowing for easy configuration changes without modifying the application's container image or restarting the Pod.
-
-We continue with our `nginx` service as an example.
-Let's say you want to change the default nginx configuration server (located under `/etc/nginx/conf.d/default.conf`). 
-
-Two approaches can be taken here:
-
-1. Build a new Docker image with your own config file, while using the `nginx:1.26.0` image as a base image in a Dockerfile.  
-2. Use the original `nginx:1.26.0` image, and mount a `/etc/nginx/conf.d/` directory into the container file system, with your own config. 
-
-The first approach introduced the overhead of build and maintaining a Docker image, only because a single file has to be changed in the pre-built image.
-The seconds approach can be easily achieved using a ConfigMap.  
-
-```yaml 
-# k8s/configmap-demo.yaml
-
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: nginx-conf
-data:
-  # this known as "file-like" keys. In YAML, the "|" coming after the key allows to have multi-line values
-  default.conf: |
-    server {
-     listen 80;
-     server_name  localhost;
-     location / {
-       proxy_pass http://netflix-movie-catalog-service:8080;
-      }
-    } 
-```
-
-After applying the ConfigMap, let's update our Deployment accordingly:
-
-```yaml 
-# k8s/deployment-demo-configmap-mount.yaml
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx
-  labels:
-    app: nginx
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: nginx
-  template:
-    metadata:
-        labels:
-          app: nginx
-    spec:
-      containers:
-      - name: server
-        image: nginx:1.26.0
-        env:
-          - name: NGINX_WORKER_PROCESSES
-            value: "2"
-          - name: NG_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: nginx-creds
-                key: username
-          - name: NG_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: nginx-creds
-                key: password
-        volumeMounts:
-          - name: nginx-configurations
-            mountPath: /etc/nginx/conf.d/
-      volumes:
-        - name: nginx-configurations
-          configMap:
-            name: nginx-conf
-```
-
-Connect to your nginx container and make sure the files has been mounted properly. 
-
-Similarly to Secrets, ConfigMap can also be consumed as environment variables.
 
 ## Kubernetes core objects summary
 
@@ -653,11 +445,15 @@ Visit the app locally using `kubectl port-forward` command. E.g.:
 kubectl port-forward service/YOUR_SERVICE_NAME 8080:8080
 ```
 
-### :pencil2: Deploy the Netflix service
+### :pencil2: Deploy the "Netflix Service"
 
-In this exercise you deploy the [NetflixMovieCatalog][NetflixMovieCatalog] and the [NetflixFrontend][NetflixFrontend] apps. 
+In this exercise you deploy the [NetflixMovieCatalog][NetflixMovieCatalog] and the [NetflixFrontend][NetflixFrontend] microservices. 
 
-1. If haven't done yet, clone both repos locally, build Docker image out of them and push to either DockerHub or ECR to a public repos. 
+![][k8s_netflix_simple]
+
+1. Fork and clone both repos locally, open in your preferred IDE.
+2. Build a Docker image out of them (you have to create and implement a `Dockerfile` in the root directory of the repo, solution `Dockerfile` in the `dockerfile` Git branch)
+3. [Push your images to a DockerHub](https://docs.docker.com/get-started/introduction/build-and-push-first-image/) public registry. 
 2. Create the following `Deployment`s and the corresponding `Service`s for them:
    - `netflix-movie-catalog` - listens on port `8080`, running in 2 replicas.
    - `netflix-frontend` - listens on port `3000`. In order for the app to fetch movies data, should be provided with an environment variable named `MOVIE_CATALOG_SERVICE` which is the address of the `netflix-movie-catalog` service. 
@@ -687,46 +483,20 @@ In this exercise you deploy a [Grafana](https://grafana.com/) server with [Redis
 1. Create a grafana Deployment based on [`grafana/grafana`](https://hub.docker.com/r/grafana/grafana) docker image, as follows:
   - The Deployment should set the following environment variables:
     - `GF_AUTH_BASIC_ENABLED` with a value equals to `true`.
-    - `GF_SECURITY_ADMIN_USER` and `GF_SECURITY_ADMIN_PASSWORD` variables **to be read from dedicated Secret object** that you'll create with corresponding username and password (to your choice).
+    - `GF_SECURITY_ADMIN_USER` and `GF_SECURITY_ADMIN_PASSWORD` variables, to your choice.
     - `GF_INSTALL_PLUGINS` with the value `redis-datasource`. This variable pass the plugins you want to install when the container is being launched.
 2. Visit the server (you can forward it using the `kubectl port-forward` command).
 3. Configure the Redis datasource [as described here](https://redisgrafana.github.io/redis-datasource/configuration/).  
 4. In the **Redis** data source page, click on the **Dashboards** tab, and import the `Redis` dashboard. Take a look on the imported dashboard.   
-4. Now, instead of configuring the Redis datasource manually, configure it "as code" using a `ConfigMap`:
-    - Create a `ConfigMap` as follows:
-      ```yaml
-      apiVersion: v1
-      kind: ConfigMap
-      metadata:
-        name: grafana-datasources
-      data:
-        datasources.yaml: |-
-          {
-              "apiVersion": 1,
-              "datasources": [
-                {
-                  "version": 2,
-                  "name": "Redis",
-                  "type": "redis-datasource",
-                  "url": "<my-redis-service-url>",
-                  "isDefault": true
-                }
-              ]
-          }
-      ```
-      Change `<my-redis-service-url>` to your redis service URL.       
-
-    - Mount the configmap into `/etc/grafana/provisioning/datasources` directory within the container. The Grafana server read all `.yaml` files in this dir and applies the data sources configurations. 
-    - Make sure the datasource is configured on a clean Grafana deployment. 
 
 ### :pencil2: Deploy an availability test stack 
 
-In this tutorial you will deploy an InfluxDB together with a CronJob to monitor the availability of the NetflixFrontend app. 
+In this exercise you will deploy an InfluxDB together with a **CronJob** to monitor the availability of the **NetflixFrontend** app. 
 
 1. Deploy an [InfluxDB](https://hub.docker.com/_/influxdb) instance:
    - Deployed using a `Deployment` and a corresponding `Service`.
    - USe the `influxdb:1.8.10` image version.
-   - Define the `INFLUXDB_ADMIN_USER` and `INFLUXDB_ADMIN_PASSWORD` env vars to be read from a `Secret` object. 
+   - Define the `INFLUXDB_ADMIN_USER` and `INFLUXDB_ADMIN_PASSWORD` env vars. 
    - Define the `INFLUXDB_HTTP_AUTH_ENABLED` env var to be equal to `true`.
 
 Let's now deploy a periodical job in the cluster that simple uses `curl` to test the availability of the NetflixFrontend service. 
@@ -742,11 +512,48 @@ The job object also remains after it is completed so that you can view its statu
 
 A [CronJob](https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/) creates Jobs on a repeating schedule.
 
-2. Based on the following [example from k8s official docs](https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#example), create a `CronJob` object that simple `curl` or `wget` the NetflixFrontend service's home page, and fails when the status code is other than `200`. 
-   The CronJob should be running every **1 minute** and stores the results data in the InfluxDB.
+2. Based on the below example, create a `CronJob` object that simply `wget` the **NetflixFrontend** service's home page, and fails when the status code is other than `200`. 
+   The CronJob was configured to be running every **1 minute** and stores the results data in the InfluxDB.
 
+```yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: frontend-latency
+spec:
+  schedule: "* * * * *"  # Runs every minute
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: latency-test
+            image: busybox:1.28
+            imagePullPolicy: IfNotPresent
+            env:
+            - name: INFLUXDB_URL
+              value: "http://YOUR_INFLUXDB_SERVICE_URL:8086/write?db=availability_test"
+            - name: FRONTEND_SERVICE
+              value: "YOUR_NETFLIX_FRONTEND_SERVICE_HOSTNAME"
+            command:
+            - /bin/sh
+            - -c
+            - |
+              TEST_TIMESTAMP=$(date +%s%N)  # Nanosecond precision timestamp
+              RESULT=$(wget -O /dev/null -T 5 --server-response --no-check-certificate --quiet "http://$FRONTEND_SERVICE" 2>&1 | awk '/^  .*time=/{print $2}' | cut -d'=' -f2)
+
+              if [ -z "$RESULT" ]; then
+                RESULT=0
+              fi
+
+              echo "Latency for $FRONTEND_SERVICE is $RESULT ms at $TEST_TIMESTAMP"
+
+              # Write latency result to InfluxDB
+              wget --method=POST --body-data="latency_test,host=$FRONTEND_SERVICE value=$RESULT $TEST_TIMESTAMP" "$INFLUXDB_URL"
+          restartPolicy: OnFailure
+```
 
 [NetflixMovieCatalog]: https://github.com/exit-zero-academy/NetflixMovieCatalog.git
 [NetflixFrontend]: https://github.com/exit-zero-academy/NetflixFrontend.git
 [k8s_core_objects]:  https://exit-zero-academy.github.io/DevOpsTheHardWayAssets/img/k8s_core_objects.png
-
+[k8s_netflix_simple]: https://exit-zero-academy.github.io/DevOpsTheHardWayAssets/img/k8s_netflix_simple.png

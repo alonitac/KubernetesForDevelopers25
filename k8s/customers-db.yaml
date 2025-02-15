@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customers-db
+spec:
+  selector:
+    matchLabels:
+      app: customers-db
+  template:
+    metadata:
+      labels:
+        app: customers-db
+    spec:
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 5
+      containers:
+      - name: server
+        image: mysql
+        resources:
+          requests:
+            memory: 20Gi

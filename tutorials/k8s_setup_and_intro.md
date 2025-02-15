@@ -28,7 +28,7 @@ To create a zonal cluster with the Google Cloud console, perform the following t
    - Since we used a release channel, automatic upgrade for nodes is enabled. 
 7. From the navigation pane, under **Node Pools**, click **Nodes**.
    - In the **Image type** drop-down list, use the **Container-Optimized OS with containerd**. This is a VM image managed by Google and optimized for k8s cluster nodes. The container runtime would be [containerd](https://containerd.io/), not Docker.
-   - Make sure you use the low-cost **e2-medium** instance edition (2vCPU, 4GB RAM).
+   - For **Machine type**, choose the `e2-standard-4` type (4vCPU, 16GB RAM).
    - For **Boot disk size**, enter **50GB** of disk per node.
 8. Click **Create**.
 
@@ -57,41 +57,11 @@ gcloud container clusters get-credentials CLUSTER_NAME  --project=qodoai --regio
 
 4. To make sure you can communicate with the cluster: 
 
-```bash
-kubectl get nodes
+```console
+$ kubectl get nodes
+NAME                                         STATUS   ROLES    AGE    VERSION
+gke-john-test-default-pool-4c95604e-6g57     Ready    <none>   118s   v1.31.4-gke.1372000
 ```
-
-## Kubernetes main components
-
-When you deploy Kubernetes (using minikube, or any other distro), you get a **cluster**.
-
-A Kubernetes cluster consists of a set of worker machines, called **nodes**, that run containerized applications (known as **Pods**).
-Every cluster has at least one worker node.
-
-The **control plane** manages the worker nodes and the Pods in the cluster.
-In production environments, the control plane usually runs across multiple computers and a cluster usually runs multiple nodes, providing fault-tolerance and high availability.
-
-![][k8s_components]
-
-#### Control Plane main components
-
-The control plane's components make global decisions about the cluster (for example, scheduling), as well as detecting and responding to cluster events (for example, starting up a new pod when a deployment's replicas field is unsatisfied).
-
-- **kube-apiserver**: The API server is the front end for the Kubernetes control plane.
-- **etcd**: Consistent and highly-available key value store used as Kubernetes' backing store for all cluster data.
-- **kube-scheduler**: Watches for newly created Pods with no assigned node, and selects a node for them to run on.
-- **kube-controller-manager**: Runs [controllers](https://kubernetes.io/docs/concepts/overview/components/#kube-controller-manager). There are many different types of controllers. Some examples of them are:
-  - Responsible for noticing and responding when nodes go down.
-  - Responsible for noticing and responding when a Deployment is not in its desired state.
-
-#### Node components
-
-Node components run on every node, maintaining running pods and providing the Kubernetes runtime environment.
-
-- **kubelet**: An agent that runs on each node in the cluster. It makes sure that containers are running in a Pod.
-- **kube-proxy**: kube-proxy is a network proxy that runs on each node in your cluster. It allows network communication to your Pods from network sessions inside or outside your cluster.
-- **Container runtime**: It is responsible for managing the execution and lifecycle of containers ([containerd](https://containerd.io/) or [CRI-O](https://cri-o.io/)).
-
 
 ## Deploy application in the cluster
 
@@ -129,17 +99,79 @@ kubectl apply -f k8s/release-0.8.0.yaml
 By default, **applications running within the cluster are not accessible from outside the cluster.**
 There are various techniques available to enable external access, we will cover some of them later on.
 
-Using port forwarding allows developers to establish a temporary tunnel for debugging purposes and access applications running inside the cluster from their local machines.
+Using **port forwarding** allows developers to establish a temporary tunnel for debugging purposes and access applications running inside the cluster from their local machines.
 
 ```bash
 kubectl port-forward svc/frontend 8080:80
 ```
 
-Finally, delete the Online Boutique Service resources by: 
+Visit the service in http://localhost:8080
 
-```bash 
-kubectl delete -f k8s/release-0.8.0.yaml
+## Pods and namespaces
+
+
+Pods are the smallest deployable units of computing that you can create and manage in Kubernetes.
+A Pod is a group of **one or more containers**, with **shared storage** and **network resources**, and a specification for how to run the containers.
+
+You can list the Online Boutique pods by:
+
+```bash
+kubectl get pods
 ```
+
+Make sure all pods are `Running`. 
+
+Pods and other resources are aggrandized in **namespaces**.
+Namespace isolates resources within a cluster, usually for better organization and access control.
+
+If you don't specify namespace, the `default` namespace is used. To list pods from all namespaces:
+
+```bash
+kubectl get pods -A
+```
+
+# Exercises 
+
+> [!TIP]
+> ### `kubectl` quick reference
+> 
+> | Description                                | Examples                                                |
+> |--------------------------------------------|---------------------------------------------------------|
+> | List cluster objects - basic information   | `kubectl get pods`, `kubectl get nodes`                 |
+> | List cluster objects - from all namespaces | `kubectl get pods -A`.                                  |
+> | List cluster objects - certain namespace   | `kubectl get pods -n kube-system`.                      |
+> | List cluster objects - wider information   | `kubectl get pods -o wide`, `kubectl get nodes -o wide` |
+> | Get full description of an object          | `kubectl describe pod POD_NAME`                         |
+> | Apply a YAML manifest                      | `kubectl apply -f my-manifest.yaml`.                    |
+> | Apply all manifests in a given dir         | `kubectl apply -f dir/`.                                |
+> | Delete an applied manifest                 | `kubectl delete -f my-manifest.yaml`                    |
+> | Watch pod logs                             | `kubectl logs my-pod`                                   |
+
+
+### :pencil2: Using `kubectl`
+
+Use `kubectl` to answer the following questions: 
+
+1. How many pod replicas does the **frontend** microservice have? 
+2. How many **containers** does a **frontend** pod have? 
+3. Use the `kubectl describe` command to get the IP address of the **frontend** pod. 
+4. For the single **frontend** running pod, how many environment variables does a container named `server` have? 
+5. For the single **frontend** running pod, what is the Docker image the container named `server` based on? 
+6. What is the node name that the **emailservice** pod was scheduled on (by the k8s scheduler)?
+8. What is the port do the **checkoutservice** pods listend on? 
+
+### :pencil2: Pod troubleshoot I
+
+Apply the `k8s/customers-db.yaml` to deploy a MySQL pod in the cluster.
+
+1. When a pod is in `Pending` status, one of the first places for debugging is the pod's events. Use the `kubectl describe` to investigate the root cause for the `Pending` status of the `customers` pod.
+2. Use the `kubectl describe node YOUR_NODE_NAME` to get information about the current available capacity in the node (you can also get the same information from your node's **Node details** page in the GCP console), use your common sense to modify the YAML manifest so the customers-db pod can run in the cluster. 
+3. When a pod is in `CrashLoopBackOff` status, the pod's containers were started successfully, but crashed due to internal error. 
+   One of the first places for debugging in the pod's logs. Print the pod's log to address the issue. 
+4. Inspired by the `k8s/release-0.8.0.yaml` YAML manifest, try to add the required env var to the `k8s/customers-db.yaml` manifest to make the MySQL pod running. 
+
+
+Use the `kubectl delete` command to cleanup your cluster. 
 
 
 [k8s_components]: https://exit-zero-academy.github.io/DevOpsTheHardWayAssets/img/k8s_components.png

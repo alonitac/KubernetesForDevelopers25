@@ -557,13 +557,11 @@ spec:
 
                 # Send latency to InfluxDB
                 curl -X POST "$INFLUXDB_URL"/write?db=availability_test --data-binary "latency_test,host=$FRONTEND_SERVICE value=$LATENCY $TEST_TIMESTAMP"
-                exit 0
               else
                 echo "Service unavailable, reporting failure"
                 
                 # Log unavailability as zero latency
                 curl -X POST "$INFLUXDB_URL"/write?db=availability_test --data-binary "latency_test,host=$FRONTEND_SERVICE value=0 $TEST_TIMESTAMP"
-                exit 1
               fi
           restartPolicy: OnFailure
 ```

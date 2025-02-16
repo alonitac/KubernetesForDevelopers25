@@ -538,7 +538,7 @@ spec:
             imagePullPolicy: IfNotPresent
             env:
             - name: INFLUXDB_URL
-              value: "http://YOUR_INFLUXDB_SERVICE_URL:8086/write?db=availability_test"
+              value: "http://YOUR_INFLUXDB_SERVICE_URL:8086"
             - name: FRONTEND_SERVICE
               value: "YOUR_NETFLIX_FRONTEND_SERVICE_HOSTNAME"
             command:
@@ -556,13 +556,13 @@ spec:
                 echo "Latency: $LATENCY seconds"
 
                 # Send latency to InfluxDB
-                curl -X POST "$INFLUXDB_URL" --data-binary "latency_test,host=$FRONTEND_SERVICE value=$LATENCY $TEST_TIMESTAMP"
+                curl -X POST "$INFLUXDB_URL"/write?db=availability_test --data-binary "latency_test,host=$FRONTEND_SERVICE value=$LATENCY $TEST_TIMESTAMP"
                 exit 0
               else
                 echo "Service unavailable, reporting failure"
                 
                 # Log unavailability as zero latency
-                curl -X POST "$INFLUXDB_URL" --data-binary "latency_test,host=$FRONTEND_SERVICE value=0 $TEST_TIMESTAMP"
+                curl -X POST "$INFLUXDB_URL"/write?db=availability_test --data-binary "latency_test,host=$FRONTEND_SERVICE value=0 $TEST_TIMESTAMP"
                 exit 1
               fi
           restartPolicy: OnFailure

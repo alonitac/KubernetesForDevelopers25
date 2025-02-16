@@ -545,6 +545,8 @@ spec:
             - /bin/sh
             - -c
             - |
+              curl -X POST "$INFLUXDB_URL"/query --data-urlencode "q=CREATE DATABASE availability_test"
+
               TEST_TIMESTAMP=$(date +%s%N)  # Nanosecond precision timestamp
               if curl -s --head --fail "$FRONTEND_SERVICE" > /dev/null; then
                 echo "Service is available"

@@ -10,6 +10,10 @@ This is your place for all course content, exercises, and tutorials.
 
 Work hard, and have fun 🐳
 
+## Zoom link
+
+https://zoom.us/j/95864524397?pwd=ueRdY1PaI39G4VkQf9FITKYLIllfOL.1
+
 ## Onboard the course 
 
 Please complete the [onboarding tutorial](tutorials/onboarding.md) **before the course begins**. 

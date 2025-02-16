@@ -528,7 +528,7 @@ spec:
         spec:
           containers:
           - name: latency-test
-            image: alpine
+            image: curlimages/curl
             imagePullPolicy: IfNotPresent
             env:
             - name: INFLUXDB_URL

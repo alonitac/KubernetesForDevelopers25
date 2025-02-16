@@ -451,6 +451,12 @@ In this exercise you deploy the [NetflixMovieCatalog][NetflixMovieCatalog] and t
 
 ![][k8s_netflix_simple]
 
+> [!NOTE]
+> You can use an existed images: 
+> 
+> - **NetflixMovieCatalog**: `alonithuji/netflix-movie-catalog:0.0.1`
+> - **NetflixFrontend**: `alonithuji/netflix-frontend:0.0.1`
+
 1. Fork and clone both repos locally, open in your preferred IDE.
 2. Build a Docker image out of them (you have to create and implement a `Dockerfile` in the root directory of the repo, solution `Dockerfile` in the `dockerfile` Git branch)
 3. [Push your images to a DockerHub](https://docs.docker.com/get-started/introduction/build-and-push-first-image/) public registry. 

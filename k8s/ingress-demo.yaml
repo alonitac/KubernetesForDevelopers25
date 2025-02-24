@@ -1,0 +1,19 @@
+# k8s/ingress-demo.yaml
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: netflix-frontend
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: YOUR_LB_IP_or_DOMAIN_NAME
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: YOUR_NETFLIX_FRONTEND_SERVICE_HERE
+            port:
+              number: YOUR_SERVICE_PORT_HERE

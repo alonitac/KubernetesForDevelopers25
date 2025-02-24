@@ -49,51 +49,7 @@ Your Git repo should always represent the desired application state, this patter
    Wait for Argo to automatically deploy your changes into the cluster.
 
 
-# Exercises 
-
-### :pencil2: CI/CD pipeline for Kubernetes
-
-Create a CI/CD pipeline for the NetflixFrontend service based on the below GitHub Actions workflow:
-
-```yaml
-name: NetflixFrontend stack build-deploy
-
-on:
-  push:
-    branches: 
-     - main
-
-permissions:
-  contents: write
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Buid and push docker images
-        run: |
-           # TODO build docker image
-           
-      - name: Checkout infrastructure repo
-        uses: actions/checkout@v3
-        with:
-          repository: YOUR_NETFLIX_INFRA_REPO  # TODO change me
-          token: ${{ secrets.REPO_TOKEN }}  # The GITHUB_TOKEN secret is a GitHub access token. 
-          path: ./NetflixInfra
-
-      - name: Update YAML manifests
-        run: |
-           cd ./NetflixInfra
-           # TODO commit & push changes to infra repo
-           
-           
-      - name: Commit and Push changes
-        run: |
-           cd ./NetflixInfra
-           # TODO commit & push changes to infra repo
-```
+# Exercises
 
 ### :pencil2: Define ArgoApp declaratively using k8s manifests
 
@@ -103,4 +59,4 @@ https://argo-cd.readthedocs.io/en/stable/user-guide/application-specification/
 
 Put your YAMLs in the `NetflixInfra` repo, under `k8s/argoApps/`. 
 
-[Read here](https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/) for more information about declerative setup.
+[Read here](https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/) for more information about declarative setup.

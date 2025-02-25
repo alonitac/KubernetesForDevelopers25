@@ -559,7 +559,6 @@ spec:
                 curl -X POST "$INFLUXDB_URL"/write?db=availability_test --data-binary "latency_test,host=$FRONTEND_SERVICE value=$LATENCY $TEST_TIMESTAMP"
               else
                 echo "Service unavailable, reporting failure"
-                
                 # Log unavailability as zero latency
                 curl -X POST "$INFLUXDB_URL"/write?db=availability_test --data-binary "latency_test,host=$FRONTEND_SERVICE value=0 $TEST_TIMESTAMP"
               fi

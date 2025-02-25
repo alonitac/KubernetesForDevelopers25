@@ -266,6 +266,17 @@ Modify the Grafana deployment as follows:
     - Make sure the datasource is configured on a clean Grafana deployment. 
 
 
+### :pencil2: Configure credentials for InfluxDB
+
+This short exercise demonstrates the idea the a secret can be used by multiple resources in the cluster.
+
+1. Configure DB username and password `Secret` for the InfluxDB.
+2. Provide the secret data to **both** the InfluxDB and the CronJob.
+   - The InfluxDB expects the `INFLUXDB_ADMIN_USER` and `INFLUXDB_ADMIN_PASSWORD` env vars. 
+   - In your CronJob object, add the following argument to every `curl` command that communicates with your DB: `-u $DB_USERNAME:$DB_PASSWORD`, while `DB_USERNAME` and `DB_PASSWORD` are env var provided to the Job. 
+
+
+
 [NetflixMovieCatalog]: https://github.com/exit-zero-academy/NetflixMovieCatalog.git
 [NetflixFrontend]: https://github.com/exit-zero-academy/NetflixFrontend.git
 [k8s_core_objects]:  https://exit-zero-academy.github.io/DevOpsTheHardWayAssets/img/k8s_core_objects.png

@@ -138,6 +138,14 @@ Visit the application using your domain name.
 
 # Exercises 
 
+### :pencil2: Blue/Green using Nginx ingress controller
+
+1. Create two **NetflixFrontend** deployments (denoted "blue" and "green").
+2. Define which one is active, and configure your Ingress to route traffic to the active deployment.
+   You can also scale the inactive deployment to 0 replicas.
+3. Deploy a new version of your app to the inactive deployment and scale it up until it is fully ready to accept end-user traffic.
+4. Configure your Ingress to route traffic to the inactive deployment, making it the new active one.
+5. You can scale down the old deployment or keep it running for a while after the release to ensure the new version is stable.
 
 ### :pencil2: Canary using Nginx 
 

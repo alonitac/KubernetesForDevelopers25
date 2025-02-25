@@ -32,7 +32,7 @@ spec:
   - metadata:
       name: mongo-persistent-storage
     spec:
-      storageClassName: standard
+      storageClassName: standard-rwo
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:

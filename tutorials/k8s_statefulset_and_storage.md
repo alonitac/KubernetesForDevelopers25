@@ -15,7 +15,7 @@ Due to the stateful nature of databases, we need a mechanism to persist data in 
 So far, Pods in the cluster were ephemeral resources, Pod's container state was not saved, so all of the files that were created or modified during the lifetime of the container were lost.
 
 Kubernetes allows you to bind a [Persistent Volume](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) to a Pod, so the data stored in that volume exist beyond the lifetime of a pod. 
-An example for a persistent volume can be an external AWS EBS, Azure disks, or a "logical volume" that mounts a file or directory from the host node's filesystem into your Pod.
+An example for a persistent volume can be an external Google Disks, AWS EBS, Azure disks, or a "logical volume" that mounts a file or directory from the host node's filesystem into your Pod.
 
 One more problem that arise here is the **"identity"** of Pods. 
 The MongoDB cluster consists by 3 Pods, although all of them have the same container spec (based on the [mongo image](https://hub.docker.com/_/mongo)), one Pod is functioning as a **primary**, while the others are **secondaries** replicas. 
@@ -69,7 +69,7 @@ spec:
   - metadata:
       name: mongo-persistent-storage
     spec:
-      storageClassName: standard
+      storageClassName: standard-rwo
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
@@ -140,17 +140,15 @@ Then for each **PersistentVolumeClaim (PVC)**, a single **PersistentVolume (PV)*
 
 Let us explain:
 
-- **PersistentVolume (PV)** is a piece of storage in the cluster. PV can represent a physical disk connected to your cluster's Nodes, or an existed EBS in AWS.
+- **PersistentVolume (PV)** is a piece of storage in the cluster. PV can represent a physical disk connected to your cluster's Nodes.
   But Pods can not use a PV directly, instead, they do it by another object called PersistentVolumeClaim (PVC).
 - **PersistentVolumeClaim (PVC)** is a **request** for volume, a **claim** for an existed PV. Pods are bound to PVC, which bound to PV resources.
   The reason for having a PVC is to **decouple** storage management from pod spec. Pods can request storage without needing to know the specifics of the underlying storage infrastructure.
 - **Storage Class (SC)** provides a way to describe the "classes" of storage that the cluster can provision.
-  For example, we can have one SC to provision volumes in AWS of type `gp3`, and another SC to provision `gp2` volumes.  
+  For example, we can have one SC to provision volumes in GCP of type `standard`, and another SC to provision `premium` volumes.  
   Obviously, there should be a well-defined **interface** between the storage system of the cloud provider, and Kubernetes. The most commonly used interface today is the [Container Storage Interface (CSI)](https://github.com/container-storage-interface/spec).
   Usually, Kubernetes clusters have default storage class to be used if the `storageClassName` field was not specified. 
-  
-  In Minikube clusters, the `standard` Storage Class has the `k8s.io/minikube-hostpath` provisioner, which mount a directory in the node's file system as a "storage". This Storage Class should be used for development only, it is not useful for real data persistence. 
-  
+
 ![k8s_statefulset_and_storage_summary][k8s_statefulset_and_storage_summary]
 
 When a Pod is (re)scheduled onto a node, for example as a result of a rolling update, its knows the PVC associated with it. That way Pods can be failed or replaced, and returned to the same volume the previous Pod has.
@@ -215,19 +213,16 @@ Volumes reclaim policy can either be `Retained` or `Deleted`.
 
 # Exercises
 
-### :pencil2: Integrate the MongoDB cluster into the `NetflixMovieCatalog` service.
+### :pencil2: Persist Grafana abd InfluxDB data using StatefulSet
 
-Modify the Python code in your [NetflixMovieCatalog][NetflixMovieCatalog] service to serve data retrieved from the above deployed MongoDB cluster. 
+**Before starting, delete any existed Grafana and InfluxDB deployments from previous exercises**.
 
-### :pencil2: Persist Grafana data using StatefulSet
+- Deploy a Grafana server using a StatefulSet with `2GB` volume to persist the server's data and configurations.
+  All Grafana data is stored under `/var/lib/grafana`. The server should run using 1 replica.
+- Similarly, persist InfluxDB data (data is stored under `/var/lib/influxdb`).
 
-**Before starting, delete any existed Grafana server from previous exercises**.
 
-Provision a Grafana server using a StatefulSet with `2GB` volume to persist the server's data and configurations.
-All Grafana data is stored under `/var/lib/grafana`. The server should run using 1 replica.
-
-Make sure the StatefulSet was created successfully, and that Grafana data is persistent.
-
+Make sure the StatefulSet was created successfully, and that data is persistent.
 
 ### :pencil2: Increase volumes capacity
 
@@ -245,16 +240,6 @@ The StorageClass that your PVC is based on, must have the `allowVolumeExpansion`
 kubectl describe storageclass <storage-class-name>
 ```
 
-To add the `allowVolumeExpansion: true` field, or can edit the resource manually via the Kubernetes Dashboard, or perform:
-
-```bash
-# Using nano 
-KUBE_EDITOR="nano" kubectl edit storageclass <storage-class-name>
-
-# Or VIM
-kubectl edit storageclass <storage-class-name>
-```
-
 Now just increase the volume size in your PVC, again either by editing it manually via the Kubernetes Dashboard, or by:
 
 ```bash
@@ -269,6 +254,27 @@ Restart can be achieved by deleting and recreating the pod or by scaling down th
 Once file system resizing is done, the PVC will automatically be updated to reflect new size.
 
 Any errors encountered while expanding file system should be available as events on pod
+
+### :pencil2: Change immutable fields in StatefulSet with ArgoCD
+
+Certain fields in a StatefulSet are immutable - they cannot be updated once the resource is created.
+For example, `spec.serviceName` or `volumeClaimTemplates`.
+
+We need to update an immutable field in a StatefulSet (e.g., modifying storage requests or changing the headless service) while ensuring that:
+
+- Pods retain their data
+- ArgoCD properly syncs the changes
+
+We will use **orphaned resource deletion strategy** to replace the StatefulSet without deleting its existing pods.
+
+1. If haven't done yet, configure one of your StatefulSet to be managed by ArgoCD. 
+2. Try updating an immutable the `spec.serviceName` field, observe the error when ArgoCD attempts to sync changes.
+3. Configure the **Prune Propagation Policy** to **Orphan**, and delete the StatefulSet YAML manifest from the Git repo. 
+   When you delete the YAML file from your GitHub repo, ArgoCD will detect that the resource is no longer defined in Git and will delete it from the cluster during the next sync. 
+4. Make sure pods still alive. 
+5. Create a new StatefulSet with the new modified `spec.serviceName` value. 
+
+Since the new StatefulSet uses the same label selector as the previous one, it will take ownership of the existing pods.
 
 
 

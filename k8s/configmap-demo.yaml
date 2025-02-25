@@ -5,6 +5,7 @@ kind: ConfigMap
 metadata:
   name: nginx-conf
 data:
+  mykey: somevalue
   # this known as "file-like" keys. In YAML, the "|" coming after the key allows to have multi-line values
   default.conf: |
     server {

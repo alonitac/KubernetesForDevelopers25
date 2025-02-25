@@ -77,8 +77,8 @@ Please complete the [onboarding tutorial](tutorials/onboarding.md) **before the 
  <td>Orchestration</td>
  <td><a href="tutorials/k8s_networking.md">Ingress and cluster networking</a></td>
  <td></td>
- <td align="center"><a href="tutorials/k8s_networking.md#exercises"><img src="https://exit-zero-academy.github.io/DevOpsTheHardWayAssets/img/pen.png" /></a></td>
  <td></td>
+ <td align="center"><a href="tutorials/k8s_networking.md#exercises"><img src="https://exit-zero-academy.github.io/DevOpsTheHardWayAssets/img/pen.png" /></a></td>
 </tr>
 
 <tr>

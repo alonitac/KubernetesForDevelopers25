@@ -66,10 +66,10 @@ Please complete the [onboarding tutorial](tutorials/onboarding.md) **before the 
 <tr>
  <td>5</td>
  <td>Orchestration</td>
- <td><a href="tutorials/k8s_argo_cd.md">Continues delivery (CD) with ArgoCD</a></td>
+ <td><a href="tutorials/k8s_argocd.md">Continues delivery (CD) with ArgoCD</a></td>
  <td align="center"><a target="_blank" href="https://alonitac.github.io/Microservices23/slides/microservices_deployment_strategies.html"><img src="https://exit-zero-academy.github.io/DevOpsTheHardWayAssets/img/slides.png" /></a></td></td>
  <td></td>
- <td align="center"><a href="tutorials/k8s_argo_cd.md#exercises"><img src="https://exit-zero-academy.github.io/DevOpsTheHardWayAssets/img/pen.png" /></a></td>
+ <td align="center"><a href="tutorials/k8s_argocd.md#exercises"><img src="https://exit-zero-academy.github.io/DevOpsTheHardWayAssets/img/pen.png" /></a></td>
 </tr>
 
 <tr>

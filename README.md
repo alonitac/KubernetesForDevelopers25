@@ -90,5 +90,24 @@ Please complete the [onboarding tutorial](tutorials/onboarding.md) **before the 
  <td align="center"><a href="tutorials/k8s_statefulset_and_storage.md#exercises"><img src="https://exit-zero-academy.github.io/DevOpsTheHardWayAssets/img/pen.png" /></a></td>
 </tr>
 
+<tr>
+ <td>8</td>
+ <td>Orchestration</td>
+ <td><a href="tutorials/k8s_helm.md">Helm</a></td>
+ <td></td>
+ <td align="center"></td>
+ <td align="center"><a href="tutorials/k8s_helm.md#exercises"><img src="https://exit-zero-academy.github.io/DevOpsTheHardWayAssets/img/pen.png" /></a></td>
+</tr>
+
+<tr>
+ <td>9</td>
+ <td>Orchestration</td>
+ <td><a href="tutorials/k8s_pod_design.md">Pod design</a></td>
+ <td></td>
+ <td align="center"></td>
+ <td align="center"><a href="tutorials/k8s_pod_design.md#exercises"><img src="https://exit-zero-academy.github.io/DevOpsTheHardWayAssets/img/pen.png" /></a></td>
+</tr>
+
+
 
 </table>

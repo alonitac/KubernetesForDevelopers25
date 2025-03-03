@@ -1,0 +1,40 @@
+# k8s/resources-demo.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netflix-frontend
+  labels:
+    app: netflix-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: netflix-frontend
+  template:
+    metadata:
+        labels:
+          app: netflix-frontend
+    spec:
+      containers:
+      - name: server
+        image: alonithuji/netflix-frontend:0.0.1
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 200m
+            memory: 200Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: netflix-frontend-service
+spec:
+  selector:
+    app: netflix-frontend
+  ports:
+  - name: http
+    port: 3000
+    targetPort: 3000

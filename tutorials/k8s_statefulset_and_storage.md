@@ -213,7 +213,7 @@ Volumes reclaim policy can either be `Retained` or `Deleted`.
 
 # Exercises
 
-### :pencil2: Persist Grafana abd InfluxDB data using StatefulSet
+### :pencil2: Persist Grafana and InfluxDB data using StatefulSet
 
 **Before starting, delete any existed Grafana and InfluxDB deployments from previous exercises**.
 
